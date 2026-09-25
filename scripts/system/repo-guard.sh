@@ -7,10 +7,11 @@
 # （CI 侧见 .github/workflows/repo-guard.yml，它只负责调用本脚本）
 #
 # 用法:
-#   bash scripts/system/repo-guard.sh            # 仓库内任意位置运行
+#   bash scripts/system/repo-guard.sh            # 从任何目录运行，守的是本脚本所在的仓库
 #   bash scripts/system/repo-guard.sh --quiet    # 只输出结论，适合 CI
+#   REPO_ROOT=<路径> bash .../repo-guard.sh      # 显式指定要检查的仓库
 #
-# 退出码: 0 = 全部通过, 1 = 有检查未通过, 2 = 不在 git 仓库内
+# 退出码: 0 = 全部通过, 1 = 有检查未通过, 2 = 脚本所在位置不在 git 仓库内
 # ============================================================================
 
 set -uo pipefail
@@ -24,9 +25,14 @@ RED='\033[0;31m'
 BLUE='\033[0;34m'
 NC='\033[0m'
 
-ROOT=$(git rev-parse --show-toplevel 2>/dev/null)
+# 目标仓库 = 脚本自身所在的仓库，与当前工作目录无关。
+# 用 cwd 判断会造成静默守错对象：从另一个仓库里运行本脚本时，
+# 它会去守那个仓库，而使用者以为在守本仓库。
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ROOT="${REPO_ROOT:-$(git -C "$SCRIPT_DIR" rev-parse --show-toplevel 2>/dev/null)}"
 if [ -z "$ROOT" ]; then
-    echo -e "${RED}✖ 当前目录不在 git 仓库内${NC}"
+    echo -e "${RED}✖ 脚本所在位置不在 git 仓库内: $SCRIPT_DIR${NC}"
+    echo -e "${YELLOW}  提示: 用 REPO_ROOT=<路径> 显式指定要检查的仓库${NC}"
     exit 2
 fi
 cd "$ROOT" || exit 2

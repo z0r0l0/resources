@@ -39,9 +39,13 @@
 因此不存在「本地过了 CI 却红」的情况。
 
 ```bash
-bash scripts/system/repo-guard.sh            # 仓库内任意位置
+bash scripts/system/repo-guard.sh            # 从任何目录运行，守的是脚本所在的仓库
 bash scripts/system/repo-guard.sh --quiet    # 只输出结论
+REPO_ROOT=/path/to/repo bash scripts/system/repo-guard.sh   # 显式指定目标仓库
 ```
+
+目标仓库由**脚本自身位置**决定，与当前工作目录无关 —— 否则从别的仓库里运行它，
+会静默地去守那个仓库，而你以为在守本仓库。
 
 检查四项：
 
