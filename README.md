@@ -23,6 +23,9 @@ bash ~/resources/scripts/system/check-env.sh
 
 # 提交前自查（与 CI 同一份实现）
 bash ~/resources/scripts/system/repo-guard.sh
+
+# 规范验证命令：校验守卫自身与 .github 配置的行为
+python3 ~/resources/tests/verify-tooling.py
 ```
 
 ---

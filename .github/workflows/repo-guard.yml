@@ -25,3 +25,9 @@ jobs:
 
       - name: 运行仓库守卫（与本地同一实现）
         run: bash scripts/system/repo-guard.sh
+
+      - name: 安装自测依赖
+        run: python3 -m pip install --quiet pyyaml
+
+      - name: 工具自测
+        run: python3 tests/verify-tooling.py
