@@ -1,0 +1,15 @@
+version: 2
+
+updates:
+  # Actions 版本每周检查一次 —— 安全修补能自动提 PR
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 3
+    commit-message:
+      prefix: "chore(ci)"
+    labels:
+      - dependencies
+      - ci
