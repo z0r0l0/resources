@@ -60,9 +60,12 @@ case "$TOKEN" in
 esac
 
 # 通过 600 权限的 curl 配置传凭据，避免出现在进程参数中
-CFG=$(mktemp); chmod 600 "$CFG"
-trap 'rm -f "$CFG"' EXIT
+# 凭据经 600 权限的 curl 配置文件传递，不出现在进程参数中
+WORK=$(mktemp -d); chmod 700 "$WORK"
+CFG="$WORK/curl.cfg"; HDRF="$WORK/hdr"; BODYF="$WORK/body"
+trap 'rm -rf "$WORK"' EXIT
 printf 'header = "Authorization: token %s"\nheader = "Accept: application/vnd.github+json"\n' "$TOKEN" > "$CFG"
+chmod 600 "$CFG"
 api() { curl -sS -m 15 --config "$CFG" "$@" 2>/dev/null; }
 
 # 本机代理链路有突发抖动（实测 HTTPS 约 50% 失败），单次请求会把 000 误报成
@@ -87,9 +90,32 @@ ISSUES=0
 flag() { echo -e "  ${RED}⚠️  $1${NC}  $2"; ISSUES=$((ISSUES + 1)); }
 ok()   { echo -e "  ${GREEN}✅ $1${NC}"; }
 
+# ── 先确认凭据本身有效 ─────────────────────────────────────────────────────
+# 凭据无效时，后面的每一项探测都会失败，而失败会被归类成「无访问」，
+# 最终输出一个干净的结论 —— 那是误报。所以先认证，不通过就直接退出。
+CODE=000
+for i in 1 2 3 4; do
+    CODE=$(api -D "$HDRF" -o "$BODYF" -w '%{http_code}' https://api.github.com/user)
+    [ "$CODE" != "000" ] && break
+    sleep 2
+done
+if [ "$CODE" != "200" ]; then
+    echo ""
+    echo -e "  ${RED}✖ 凭据未通过认证（HTTP $CODE）—— 无法评估权限，不做任何结论${NC}"
+    case "$CODE" in
+        401) echo -e "  ${YELLOW}凭据无效或已被撤销。重新登录: gh auth login${NC}" ;;
+        403) echo -e "  ${YELLOW}被拒绝：权限不足或触发限流${NC}" ;;
+        000) echo -e "  ${YELLOW}链路不可达（本机代理抖动），稍后重试${NC}" ;;
+    esac
+    exit 2
+fi
+python3 -c '
+import json, sys
+d = json.load(open(sys.argv[1]))
+print(f"  账户: {d.get(\"login\")}   公开仓库: {d.get(\"public_repos\")}")' "$BODYF" 2>/dev/null
+
 # ── classic / oauth：从响应头读 scope 列表 ─────────────────────────────────
-HDRS=$(api -D - -o /dev/null https://api.github.com/user)
-SCOPES=$(printf '%s' "$HDRS" | tr -d '\r' | awk 'tolower($1)=="x-oauth-scopes:"{ $1=""; sub(/^ /,""); print }')
+SCOPES=$(tr -d '\r' < "$HDRF" | awk 'tolower($1)=="x-oauth-scopes:"{ $1=""; sub(/^ /,""); print }')
 
 if [ -n "$SCOPES" ]; then
     echo "  声明 scope: $SCOPES"
@@ -124,7 +150,9 @@ probe() {  # probe <标签> <路径> <危险时的说明>
         200) echo -e "  ${YELLOW}⚠️  $1: 可访问 ($code)${NC}  ${3:-}"; [ -n "${3:-}" ] && ISSUES=$((ISSUES + 1)) ;;
         404) echo -e "  ${GREEN}✅ $1: 无此访问 ($code)${NC}" ;;
         403) echo -e "  ${GREEN}✅ $1: 被拒绝 ($code)${NC}" ;;
-        *)   echo -e "  ·   $1: $code（重试后仍无响应，属链路问题而非权限）${NC}" ;;
+        401) echo -e "  ${RED}✖ $1: 凭据无效 ($code)${NC}"; ISSUES=$((ISSUES + 1)) ;;
+        000) echo -e "  ·   $1: 无响应（链路抖动，非权限问题）${NC}" ;;
+        *)   echo -e "  ·   $1: 未预期状态 $code${NC}" ;;
     esac
 }
 
@@ -139,26 +167,13 @@ for r in "${REPOS[@]}"; do
     code=$(probe_code "/repos/$r")
     case "$code" in
         200) echo -e "  ${GREEN}✅ $r 可达${NC}" ;;
-        404) echo -e "  ${YELLOW}·  $r 不可达或不存在 ($code)${NC}" ;;
-        *)   echo -e "  ${YELLOW}·  $r 返回 $code（重试后仍无响应，属链路问题）${NC}" ;;
+        404) echo -e "  ${YELLOW}·  $r 不存在，或该凭据无权看到它 ($code)${NC}" ;;
+        403) echo -e "  ${YELLOW}·  $r 无权访问 ($code) —— 细粒度 token 常见，属预期${NC}" ;;
+        401) echo -e "  ${RED}✖ $r 凭据无效 ($code)${NC}"; ISSUES=$((ISSUES + 1)) ;;
+        000) echo -e "  ${YELLOW}·  $r 无响应（链路抖动，重试后仍不可达）${NC}" ;;
+        *)   echo -e "  ${YELLOW}·  $r 未预期状态 $code${NC}" ;;
     esac
 done
-
-echo ""
-echo -e "${GREEN}▶ 身份${NC}"
-ident=""
-for i in 1 2 3 4; do
-    ident=$(api https://api.github.com/user)
-    [ -n "$ident" ] && break
-    sleep 2
-done
-printf '%s' "$ident" | python3 -c "
-import sys, json
-try:
-    d = json.load(sys.stdin)
-    print(f\"  账户: {d.get('login')}   公开仓库: {d.get('public_repos')}\")
-except Exception:
-    print('  （链路抖动导致取不到身份，与凭据无关）')" 2>/dev/null
 
 echo ""
 echo "── 结论 ──"
