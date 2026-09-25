@@ -34,20 +34,20 @@ python3 ~/resources/tests/verify-tooling.py
 
 ```
 resources/
-├── system/                    # 🖥️ 主机配置
+├── system/                    # 🖥️ 主机配置（这台机器怎么配）
 │   ├── proxy/                 #   代理配置（WSL + Clash Verge Rev）
 │   ├── security/              #   安全约定与权限审计方法论
 │   ├── shell/                 #   Shell 环境（env.sh / 别名）
-│   └── wsl/                   #   WSL 配置（wsl.conf / resolv.conf）
-├── scripts/                   # ⚡ 可执行脚本
+│   ├── wsl/                   #   WSL 配置（wsl.conf / resolv.conf）
+│   ├── git/                   #   Git 配置与别名
+│   └── hermes/                #   Hermes Agent 配置与人格
+├── scripts/                   # ⚡ 可执行脚本（你要跑什么）
 │   ├── dev/                   #   Node / Python 环境安装
 │   ├── qq-bot/                #   QQ Bot 网关运维
 │   └── system/                #   系统检查、安装、更新、仓库守卫
-├── knowledge/                 # 📚 技术文档与排错指南
-├── hermes/                    # 🤖 Hermes Agent 配置与人格
-├── templates/                 # 📋 项目模板（Python / Node / Docker）
-├── tools/                     # 🔧 一键安装与环境初始化
-├── git-config/                # 🐙 Git 配置与别名
+├── knowledge/                 # 📚 技术文档与排错指南（你要读什么）
+├── templates/                 # 📋 项目模板（你要复制什么）
+├── tools/                     # 🔧 一键安装与环境初始化（怎么起步）
 └── .github/                   # ⚙️ CI 工作流与模板
 ```
 
@@ -63,6 +63,8 @@ resources/
 | [K8s 可观测性平台](knowledge/k8s-observability-guide.md) | 轻量级监控栈运维手册（版本钉死、values 驱动） |
 | [安全约定](SECURITY.md) | 什么绝不入库、文档脱敏规范、问题上报 |
 | [权限审计方法论](system/security/README.md) | 如何测量一个账户在主机上的真实权限边界 |
+| [Git 配置与别名](system/git/README.md) | 常用 Git 别名与工作流约定 |
+| [Hermes 配置](system/hermes/README.md) | Agent 的模型、人格与目录结构 |
 | [贡献指南](CONTRIBUTING.md) | 文件规范、提交规范、提交前检查 |
 | [变更记录](CHANGELOG.md) | 版本历史 |
 
