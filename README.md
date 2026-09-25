@@ -9,7 +9,7 @@
 
 ```
 resources/
-├── system/           # 🖥️ 系统配置（WSL、Shell、代理）
+├── system/           # 🖥️ 系统配置（WSL、Shell、代理、安全基线）
 ├── hermes/           # 🤖 Hermes Agent 配置与技能
 ├── scripts/          # ⚡ 实用脚本集合
 │   ├── system/       #   系统管理
@@ -42,7 +42,7 @@ bash ~/resources/scripts/system/check-env.sh
 
 | 目录 | 说明 | 谁用 |
 |------|------|------|
-| `system/` | WSL 配置、Shell 环境、代理设置 | 新机部署时参考 |
+| `system/` | WSL 配置、Shell 环境、代理设置、权限审计基线 | 新机部署时参考 |
 | `hermes/` | Hermes Agent 配置、自定义技能 | AI 助手与我共享 |
 | `scripts/` | 日常运维、开发辅助脚本 | 终端直接运行 |
 | `knowledge/` | 技术文档、排错指南 | 查阅/学习 |
