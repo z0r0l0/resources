@@ -11,7 +11,7 @@
 | **Base URL** | https://api.deepseek.com/v1 |
 | **最大轮次** | 150 |
 | **推理力度** | medium |
-| **网关** | QQ Bot (APP_ID=1905239104) |
+| **网关** | QQ Bot (APP_ID 已隐去，见本机 `~/.hermes` 配置) |
 
 ## 目录说明
 

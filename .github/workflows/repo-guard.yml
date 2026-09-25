@@ -1,0 +1,61 @@
+name: repo-guard
+
+# 公开仓库的守卫：任何推送/PR 都先扫一遍绝不应当入库的东西。
+# 零第三方依赖 —— 不引入 action 供应链风险，只有原生 shell。
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  secret-scan:
+    name: 密钥与敏感文件扫描
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 扫描密钥特征
+        run: |
+          set -euo pipefail
+          # 只匹配真实密钥形态，避免误报常见占位符
+          PAT='ghp_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|sk-[A-Za-z0-9]{20,}|AKIA[0-9A-Z]{16}|AIza[0-9A-Za-z_-]{30,}|xox[baprs]-[A-Za-z0-9-]{10,}'
+          if grep -rInE "$PAT" . --exclude-dir=.git --exclude-dir=.github; then
+            echo "::error::发现疑似密钥特征，禁止入库"
+            exit 1
+          fi
+          echo "✅ 未发现密钥特征"
+
+      - name: 扫描私钥文件
+        run: |
+          set -euo pipefail
+          if grep -rIn --exclude-dir=.git --exclude-dir=.github 'BEGIN [A-Z ]*PRIVATE KEY'; then
+            echo "::error::发现私钥内容"
+            exit 1
+          fi
+          echo "✅ 未发现私钥内容"
+
+      - name: 检查是否误提交敏感文件
+        run: |
+          set -euo pipefail
+          if git ls-files | grep -Ev '^\.github/' | grep -E '(^|/)\.env($|\.)|\.pem$|\.key$|\.p12$|id_rsa|id_ed25519'; then
+            echo "::error::敏感文件被纳入版本控制"
+            exit 1
+          fi
+          echo "✅ 无敏感文件被追踪"
+
+      - name: 检查大文件
+        run: |
+          set -euo pipefail
+          big=$(git ls-files -z | xargs -0 -I{} sh -c 'test -f "{}" && s=$(stat -c%s "{}") && [ "$s" -gt 5242880 ] && echo "{} ($s bytes)"' || true)
+          if [ -n "$big" ]; then
+            echo "::error::存在 >5MB 文件，考虑使用 Git LFS"
+            echo "$big"
+            exit 1
+          fi
+          echo "✅ 无超大文件"

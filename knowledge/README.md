@@ -27,7 +27,7 @@
 - 定时任务：cron 系统
 
 ### QQ Bot 要点
-- APP_ID：1905239104
+- APP_ID：已隐去（见本机 `~/.hermes` 配置；AppID 非密钥，但无需公开）
 - 消息通过 QQ 频道收发
 - 支持 Markdown 和媒体文件发送
 
