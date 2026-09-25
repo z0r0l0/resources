@@ -22,6 +22,7 @@
 | `install-essentials.sh` | 常用开发工具一键安装 | 0 成功 |
 | `update-all.sh` | 全量更新：系统包 + 语言生态 + 工具 | 0 成功 |
 | `repo-guard.sh` | **入库守卫**：密钥 / 私钥 / 敏感文件 / 大文件 | 0 通过，1 拦截，2 不在仓库内 |
+| `verify-github-token.sh` | **凭据权限审计**：标出过度授权的 scope 与可达能力 | 0 未发现问题，1 有需处理项，2 无法读取凭据 |
 
 ### `qq-bot/` — QQ Bot 网关
 

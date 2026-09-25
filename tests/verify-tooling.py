@@ -169,16 +169,27 @@ else:
     p = REPO / ".github/PULL_REQUEST_TEMPLATE.md"
     ck("PR 模板存在且非空", p.is_file() and len(p.read_text().strip()) > 50)
 
+# ── A3. 凭据审计脚本 ────────────────────────────────────────────────────────
+print("\n── 凭据审计脚本 ──")
+VT = REPO / "scripts/system/verify-github-token.sh"
+ck("语法可解析", run(["bash", "-n", str(VT)]).returncode == 0)
+empty_cfg = tmp()
+r = run(["bash", str(VT)], env={**os.environ, "GH_CONFIG_DIR": str(empty_cfg)})
+ck("无凭据时以退出码 2 干净失败（不误报通过）", r.returncode == 2, f"rc={r.returncode}")
+
 # ── B. 本机私有内容（CI 中跳过） ────────────────────────────────────────────
 print("\n── 私有内容（本机专属） ──")
 B = PRIVATE / "scripts/backup.sh"
 if not B.is_file():
     skip("备份脚本与私有仓库检查", f"未找到 {B}")
 else:
+    # 幂等性要看「紧接的第二次运行」：第一次可能合法地同步真实漂移
+    # （技能与记忆在会话之间会被改动），拿第一次断言必然周期性误报。
+    r1 = run(["bash", str(B)])
+    ck("备份运行退出 0", r1.returncode == 0, f"rc={r1.returncode}")
     before = run(["git", "-C", str(PRIVATE), "rev-parse", "HEAD"]).stdout.strip()
-    r = run(["bash", str(B)])
-    ck("备份幂等运行退出 0", r.returncode == 0, f"rc={r.returncode}")
-    ck("无变化时不产生提交", "无需提交" in r.stdout, r.stdout[-120:])
+    r2 = run(["bash", str(B)])
+    ck("紧接重跑，无变化则不提交", "无需提交" in r2.stdout, r2.stdout[-160:])
     ck("无变化时 HEAD 不变",
        before == run(["git", "-C", str(PRIVATE), "rev-parse", "HEAD"]).stdout.strip())
 
