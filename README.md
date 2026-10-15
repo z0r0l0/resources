@@ -41,9 +41,11 @@ resources/
 │   ├── wsl/                   #   WSL 配置（wsl.conf / resolv.conf）
 │   ├── git/                   #   Git 配置与别名
 │   └── hermes/                #   Hermes Agent 配置与人格
+│       └── systemd/           #   无人值守单元模板（自启 / 看护 / 报平安）
 ├── scripts/                   # ⚡ 可执行脚本（你要跑什么）
 │   ├── dev/                   #   Node / Python 环境安装
 │   ├── qq-bot/                #   QQ Bot 网关运维
+│   ├── hermes/                #   开机报平安 / 网关看护（脱敏通用版）
 │   └── system/                #   系统检查、安装、更新、仓库守卫
 ├── knowledge/                 # 📚 技术文档与排错指南（你要读什么）
 ├── templates/                 # 📋 项目模板（你要复制什么）
@@ -60,6 +62,9 @@ resources/
 | [WSL2 环境搭建终极指南](knowledge/wsl-ultimate-guide.md) | WSL 初始配置、系统盘迁移、网络模式、代理 |
 | [网络与代理配置指南](knowledge/network-proxy-setup.md) | Clash Verge Rev 与 WSL 的代理链路、DNS 处理 |
 | [Hermes Agent 使用指南](knowledge/hermes-agent-guide.md) | 安装、配置、记忆与技能体系 |
+| [Hermes 无人值守运维手册](knowledge/hermes-agent-ops-playbook.md) | 开机自启三根柱子、看护器分工、卡顿诊断、排查方法论 |
+| [Hermes 桌面插件开发指南](knowledge/hermes-desktop-plugin-guide.md) | 插件结构、错误边界、踩坑清单（TDZ / flex-1 / 误点标签） |
+| [项目复盘 2026-10](knowledge/hermes-project-retrospective-2026-10.md) | 桌面运维面板的一次完整迭代复盘（含弯路） |
 | [K8s 可观测性平台](knowledge/k8s-observability-guide.md) | 轻量级监控栈运维手册（版本钉死、values 驱动） |
 | [安全约定](SECURITY.md) | 什么绝不入库、文档脱敏规范、问题上报 |
 | [权限审计方法论](system/security/README.md) | 如何测量一个账户在主机上的真实权限边界 |
@@ -94,6 +99,20 @@ resources/
 |------|------|
 | [`scripts/qq-bot/gateway-health.sh`](scripts/qq-bot/gateway-health.sh) | 网关健康检查 |
 | [`scripts/qq-bot/restart-gateway.sh`](scripts/qq-bot/restart-gateway.sh) | 网关重启 |
+
+### Hermes 无人值守（开机自启 + 自愈）
+
+| 脚本 / 单元 | 用途 |
+|------|------|
+| [`scripts/hermes/boot-notify.sh`](scripts/hermes/boot-notify.sh) | **开机报平安**：三根柱子（WSL 自拉起 / linger / 网关自启）的验收判据 |
+| [`scripts/hermes/gateway-watchdog.sh`](scripts/hermes/gateway-watchdog.sh) | 静默失联自愈：网络层豁免 + 连续判据 + 防抖升级 |
+| [systemd 单元模板](system/hermes/systemd/README.md) | 上述脚本的 `.service` / `.timer` 与 `linger` 前置 |
+
+### 项目模板
+
+| 模板 | 用途 |
+|------|------|
+| [`templates/hermes-desktop-plugin/`](templates/hermes-desktop-plugin/) | Hermes 桌面插件最小可运行示例（整页 + 导航 + 后端取数 + 错误边界） |
 
 ### 配置脚本
 

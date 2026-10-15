@@ -6,6 +6,30 @@
 
 ---
 
+## [1.6.0] - 2026-10-15
+
+### 新增
+- **`scripts/hermes/`** —— Hermes 无人值守脚本（脱敏通用版）
+  - `boot-notify.sh`：开机报平安。三根柱子（宿主自拉起 / linger / 网关自启）的验收判据；
+    含节流、等网关就绪、发送前清代理三个必要设计
+  - `gateway-watchdog.sh`：静默失联自愈。网络层豁免 → 连续判据 → 防抖升级；
+    探针不可用时判为"判据不可用"而非异常（v1 曾因列号写错误触发两次重启）
+- **`system/hermes/systemd/`** —— 上述脚本的 `.service` / `.timer` 单元模板
+  + `linger` 前置说明 + 验收姿势（oneshot 的 `static` 属正常，要看 timer 的 NEXT/LAST）
+- **`templates/hermes-desktop-plugin/`** —— Hermes 桌面插件最小可运行示例
+  （整页 + 导航入口 + 后端取数 + 每段错误边界 + 写操作二次确认）
+- **`knowledge/hermes-agent-ops-playbook.md`** —— 无人值守运维手册：
+  自启三根柱子、看护器分工、卡顿诊断（线程栈怎么读）、排查方法论
+- **`knowledge/hermes-desktop-plugin-guide.md`** —— 插件开发指南与踩坑清单
+- **`knowledge/hermes-project-retrospective-2026-10.md`** —— 桌面运维面板的一次完整迭代复盘
+
+### 说明
+- 以上内容均已脱敏：去除本机绝对路径、账号标识、平台 ID、端口等可定位本机的信息
+- 文档里的关键结论都标注了来源（实测 / 踩坑），并强调"能红才算有效"的验证姿势
+  —— 断言必须能证明它在出错时会报错
+
+---
+
 ## [1.5.0] - 2026-09-25
 
 ### 变更

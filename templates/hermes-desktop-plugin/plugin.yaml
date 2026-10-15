@@ -1,0 +1,5 @@
+name: demo
+version: 1.0.0
+description: Hermes 桌面插件最小示例（整页 + 导航入口 + 后端取数）
+author: ""
+license: MIT

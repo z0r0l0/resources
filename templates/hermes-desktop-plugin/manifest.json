@@ -1,0 +1,17 @@
+{
+  "name": "demo",
+  "version": "1.0.0",
+  "description": "Hermes 桌面插件最小示例",
+  "author": "",
+  "license": "MIT",
+  "main": "plugin.js",
+  "api": "dashboard/plugin_api.py",
+  "permissions": [
+    "ui:page",
+    "ui:sidebar-nav",
+    "api:call"
+  ],
+  "features": {
+    "demo": true
+  }
+}
